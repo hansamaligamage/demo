@@ -9,6 +9,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using movieStore.Models;
+using MySQL.Data.EntityFrameworkCore.Extensions;
 
 namespace movieStore
 {
@@ -29,7 +30,16 @@ namespace movieStore
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddDbContext<MovieDbContext>(options => options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
+            // services.AddDbContext<MovieDbContext>(options => options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
+
+            var optionsBuilder = new DbContextOptionsBuilder<MovieDbContext>();
+            optionsBuilder.UseMySQL(Configuration.GetConnectionString("DefaultConnection"));
+
+            var context = new MovieDbContext(optionsBuilder.Options);
+            context.Database.EnsureCreated();
+
+            services.AddDbContext<MovieDbContext>(options => options.UseMySQL(Configuration.GetConnectionString("DefaultConnection")));
+
             // Add framework services.
             services.AddMvc();
         }
